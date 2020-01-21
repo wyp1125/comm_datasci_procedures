@@ -40,6 +40,7 @@ for i in range(0,len(varfea)):
     if varfea.index[i]==args.yname:
         havingy=1
         vartype="y"+vartype
+        modeltype=vartype
     if vartype=="c" or vartype=="n":
         feacolumns.append(varfea.index[i])
     if vartype=="d":
@@ -51,6 +52,25 @@ for i in range(0,len(varfea)):
 if havingy==0:
     print("The name of the outcome variable specified did not match the data file. Please try again!")
     exit()
+if modeltype=="yn":
+    print("The outcome variable is numeric")
+else:
+    print("The outcome variable is categorical")
+    level2count=df2[args.yname].value_counts()
+    ncls=len(level2count)
+    if ncls>2:
+        print("This is a multi-class problem")
+    else:
+        print("This is a binary classification")
+        cls1=int(level2count[0])
+        cls2=int(level2count[1])
+        print(str(level2count.index[0])+":"+str(level2count[0]))
+        print(str(level2count.index[1])+":"+str(level2count[1]))
+        rt=cls1/(cls1+cls2)
+        if rt>0.1 and rt<0.9:
+            print("This dataset should be regarded as balanced. Consider removing outliers in predictors")
+        else:
+            print("This dataset should be regarded as imbalanced. Better to implement anomaly detection algorithms")
 with open(args.outprefix+".vardes","w") as of:
     of.write(vardes)
 out_y=df2[ycolumns]
