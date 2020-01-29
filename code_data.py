@@ -32,14 +32,19 @@ for i in range(0,n):
     vardict[vardes.iloc[i,0]]=vardes.iloc[i,4]
 rawx=pd.read_csv(rawxfile)
 m=len(rawx.index)
-dumvar=[]
+dumbvar=[]
+dummvar=[]
 numvar=[]
 for colname in rawx.columns:
-    if vardict[colname]=='c':
-        dumvar.append(colname)
+    if vardict[colname]=='cb':
+        dumbvar.append(colname)
+    if vardict[colname]=='cm':
+        dummvar.append(colname)
     if vardict[colname]=='n':
         numvar.append(colname)
-codedx=pd.get_dummies(rawx,columns=dumvar)
+tempx=pd.get_dummies(rawx,columns=dumbvar,drop_first=True)
+codedx=pd.get_dummies(tempx,columns=dummvar)
+
 if rmol:
     keepfea=[]
     for feaname in codedx.columns:
@@ -73,7 +78,7 @@ codedx_final=pd.DataFrame(data=scaler.transform(codedx_ol_rmd.to_numpy()),column
 #print(codedx_final)
 
 rawy=pd.read_csv(rawyfile)
-if vardict[rawy.columns[0]]=='yc':
+if vardict[rawy.columns[0]][0:2]=='yc':
     codedy=pd.get_dummies(rawy)
 else:
     codedy=rawy.copy()

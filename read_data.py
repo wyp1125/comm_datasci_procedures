@@ -13,6 +13,8 @@ elif filepath.endswith('.xlsx'):
 else:
     print("The input file must be a '.csv' or '.xlsx' file")
     exit()
+#replace "_" by "." in column names
+
 #filtering null colunms and rows with missing data
 df1=df.dropna(axis=1,how='all')
 df2=df1.dropna(axis=0,how='any')
@@ -30,25 +32,29 @@ for i in range(0,len(varfea)):
     collevels=len(df2[varfea.index[i]].unique())
     perct=int(10000*collevels/nrows)/100
     if str(varfea[i])=="object":
-        vartype="c"
         if collevels==1 or collevels>nrows*0.2:
             vartype="d"
+        elif collevels==2:
+            vartype="cb"
+        else:
+            vartype="cm"
     elif str(varfea[i])=="bool":
-        vartype="c"
+        vartype="cb"
     else:
         vartype="n"
     if varfea.index[i]==args.yname:
         havingy=1
         vartype="y"+vartype
         modeltype=vartype
-    if vartype=="c" or vartype=="n":
+    if vartype[0]=="c" or vartype[0]=="n":
         feacolumns.append(varfea.index[i])
-    if vartype=="d":
+    if vartype[0]=="d":
         idcolumns.append(varfea.index[i])
     if vartype[0]=="y":
         ycolumns.append(varfea.index[i])
     print(varfea.index[i]+"\t"+str(varfea[i])+"\t"+str(collevels)+"\t"+str(perct)+"\t"+vartype)
-    vardes=vardes+"\n"+varfea.index[i]+"\t"+str(varfea[i])+"\t"+str(collevels)+"\t"+str(perct)+"\t"+vartype
+    tempstr=varfea.index[i]
+    vardes=vardes+"\n"+tempstr.replace("_",".")+"\t"+str(varfea[i])+"\t"+str(collevels)+"\t"+str(perct)+"\t"+vartype
 if havingy==0:
     print("The name of the outcome variable specified did not match the data file. Please try again!")
     exit()
@@ -75,8 +81,17 @@ with open(args.outprefix+".vardes","w") as of:
     of.write(vardes)
 out_y=df2[ycolumns]
 out_x=df2[feacolumns]
+renamecolumns={}
+for eachcolumn in out_x.columns:
+    if "_" in eachcolumn:
+        newcolumn=eachcolumn.replace("_",".")
+        renamecolumns[eachcolumn]=newcolumn
+if renamecolumns:
+    out_x1=out_x.rename(columns=renamecolumns)
+else:
+    out_x1=out_x.copy()
 out_y.to_csv(args.outprefix+".rawy",index=False)
-out_x.to_csv(args.outprefix+".rawx",index=False)
+out_x1.to_csv(args.outprefix+".rawx",index=False)
     
 
 
