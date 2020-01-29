@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -15,9 +13,13 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.metrics import classification_report
 
 parser = argparse.ArgumentParser(description='This program quickly builds a binary machine learning model using predefined parameters for testing purpose')
-parser.add_argument('-i', '--inprefix', type=str, required=True, help="prefix of feature files (.codedx & .codedy)")
+parser.add_argument('-i', '--inprefix', type=str, required=True, help="prefix of feature and response files (.codedx & .codedy)")
 parser.add_argument('-m', '--mlmodel', type=int, required=True, help="ml model choice - 0:Nearest Neighbors, 1:Linear SVM, 2:RBS SVM, 3:Decision Tree, 4:Random Forest, 5:Neural Net, 6:AdaBoost, 7:Naive Bayes")
+parser.add_argument("-r", '--testratio', type=float, required=False,  help="fraction for testing data (default: 0.2)")
 args = parser.parse_args()
+testratio=0.2
+if args.testratio:
+    testratio=args.testratio
 
 clsr_names=["Nearest Neighbors", "Linear SVM", "RBF SVM",
             "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
@@ -38,7 +40,7 @@ feafile=args.inprefix+".codedx"
 rspfile=args.inprefix+".codedy"
 fea=pd.read_csv(feafile)
 rsp=pd.read_csv(rspfile).iloc[:,0]
-x_trn, x_tst, y_trn, y_tst = train_test_split(fea, rsp, test_size=0.2)
+x_trn, x_tst, y_trn, y_tst = train_test_split(fea, rsp, test_size=testratio)
 model=clsf.fit(x_trn,y_trn)
 y_pred=model.predict(x_tst)
 acc=float((y_pred==y_tst).sum())/float(len(y_tst))
