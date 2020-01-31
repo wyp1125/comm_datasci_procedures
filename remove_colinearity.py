@@ -9,15 +9,14 @@ parser = argparse.ArgumentParser(description='This program takes in the .codedx 
 parser.add_argument('-i', '--incodedx', type=str, required=True, help="input codedx files")
 parser.add_argument('-o', '--outcodedx', type=str, required=True, help="output codedx files")
 parser.add_argument('-s', '--sampling', type=str, required=False, help="sampling approach: if integer and >1: number of rows; if float and <=1: fraction; default:1000")
+parser.add_argument('-m', '--model', type=int, required=True, help="model: 0:VIF, 1:TOP, 2:PCA")
 args = parser.parse_args()
 
 def calculate_vif(df, thresh=5):
     const = add_constant(df)
     cols = const.columns
     variables = np.arange(const.shape[1])
-    vif_df = pd.Series([variance_inflation_factor(const.values, i) 
-               for i in range(const.shape[1])], 
-              index=const.columns).to_frame()
+    vif_df = pd.Series([variance_inflation_factor(const.values, i) for i in range(const.shape[1])], index=const.columns).to_frame()
 
     vif_df = vif_df.sort_values(by=0, ascending=False).rename(columns={0: 'VIF'})
     vif_df = vif_df.drop('const')
@@ -27,14 +26,12 @@ def calculate_vif(df, thresh=5):
     print(vif_df[vif_df['VIF'] > thresh])
 
     col_to_drop = list(vif_df.index)
-
     for i in col_to_drop:
         print('Dropping: {}'.format(i))
         df = df.drop(columns=i)
-
     return df
 
-codedxfile=args.incodedx
+codedxfile=args.incodedx+".codedx"
 if not os.path.isfile(codedxfile):
     print("Cannot find the .codedx file!")
     exit()
@@ -53,11 +50,10 @@ if args.sampling:
     else:
         print("samping option should be >0")
         exit()
-#print(samn)
 idx=[i for i in range(0,n)]
 selidx=random.sample(idx,samn)
-#print(selidx)
 seldat=codedx.iloc[selidx,:]
+
 calculate_vif(seldat)
 
 
